@@ -32,7 +32,7 @@ def merge_proxies(urls):
 def save_merged_yaml(proxies):
     """将合并的代理配置保存到一个YAML文件中。"""
     result_config = {'proxies': proxies}
-    with open('merged.yaml', 'w', encoding='utf-8') as output_file:
+    with open('merged.yml', 'w', encoding='utf-8') as output_file:
         yaml.dump(result_config, output_file, default_flow_style=False, allow_unicode=True, sort_keys=False)
 
 if __name__ == "__main__":
@@ -42,5 +42,5 @@ if __name__ == "__main__":
     merged_proxies = merge_proxies(urls)
     save_merged_yaml(merged_proxies)
 
-    print("合并后的代理已保存到 merged.yaml")
+    print("合并后的代理已保存到 merged.yml")
     print(f"合并的代理总数: {len(merged_proxies)}")
