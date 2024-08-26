@@ -25,18 +25,17 @@ def merge_proxies(urls):
     for name, url in urls.items():
         config_data = fetch_yaml(url)
         if config_data and 'proxies' in config_data:
-            proxies = [
-                {**proxy, 'name': f"{name}-{proxy['name']}"}
-                for proxy in config_data['proxies']
-            ]
-            merged_proxies.extend(proxies)
+            for proxy in config_data['proxies']:
+                # 创建新的代理字典，保留所有原始字段
+                new_proxy = {**proxy, 'name': f"{name}-{proxy['name']}"}
+                merged_proxies.append(new_proxy)
     return merged_proxies
 
 def save_merged_yaml(proxies):
     """将合并的代理配置保存到一个YAML文件中。"""
     result_config = {'proxies': proxies}
     with open('merged.yaml', 'w', encoding='utf-8') as output_file:
-        yaml.dump(result_config, output_file, default_flow_style=False, allow_unicode=True)
+        yaml.dump(result_config, output_file, default_flow_style=False, allow_unicode=True, sort_keys=False)
 
 if __name__ == "__main__":
     merged_proxies = merge_proxies(urls)
