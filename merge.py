@@ -2,12 +2,10 @@ import requests
 import yaml
 import os
 
-# 定义要获取YAML文件的URL字典
-urls = {
-    'ermaozi': 'https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml',
-    'clashfree': 'https://raw.githubusercontent.com/aiboboxx/clashfree/main/clash.yml',
-    # 根据需要添加更多URL，格式为 '自定义名称': 'URL'
-}
+def load_urls_from_file(filename):
+    """从文件中加载URL。"""
+    with open(filename, 'r', encoding='utf-8') as file:
+        return yaml.safe_load(file)
 
 def fetch_yaml(url):
     """从URL获取YAML内容。"""
@@ -38,6 +36,9 @@ def save_merged_yaml(proxies):
         yaml.dump(result_config, output_file, default_flow_style=False, allow_unicode=True, sort_keys=False)
 
 if __name__ == "__main__":
+    # 从 source.yaml 文件加载 URL
+    urls = load_urls_from_file('source.yaml')
+    
     merged_proxies = merge_proxies(urls)
     save_merged_yaml(merged_proxies)
 
