@@ -7,20 +7,33 @@ set -x  # 打印执行的每一行命令
 LATEST_RELEASE=$(curl -s https://api.github.com/repos/faceair/clash-speedtest/releases/latest | grep "browser_download_url.*Linux_x86_64.tar.gz" | cut -d '"' -f 4)
 curl -L $LATEST_RELEASE | tar xz
 
-# 检查 clash-speedtest 是否成功解压
+# 检查 clash-speedtest 是否成功解压并给予执行权限
 if [ ! -f ./clash-speedtest ]; then
     echo "Error: clash-speedtest not found after extraction"
     exit 1
 fi
+chmod +x ./clash-speedtest
 
-# 检查 merged.yml 是否存在
+# 打印 clash-speedtest 的文件信息
+ls -l ./clash-speedtest
+
+# 检查 merged.yml 是否存在并打印其前几行
 if [ ! -f merged.yml ]; then
     echo "Error: merged.yml not found"
     exit 1
 fi
+echo "First 10 lines of merged.yml:"
+head -n 10 merged.yml
 
-# 执行 clash-speedtest
-./clash-speedtest -c merged.yml -output csv -timeout 1s > results.csv
+# 执行 clash-speedtest 并捕获详细输出
+./clash-speedtest -c merged.yml -output csv -timeout 1s > results.csv 2>clash_speedtest_error.log
+
+# 如果 clash-speedtest 失败，打印错误日志
+if [ $? -ne 0 ]; then
+    echo "clash-speedtest failed. Error log:"
+    cat clash_speedtest_error.log
+    exit 1
+fi
 
 # 检查 results.csv 是否生成
 if [ ! -f results.csv ]; then
