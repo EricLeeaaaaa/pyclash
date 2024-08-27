@@ -26,9 +26,9 @@ def merge_clash_config(base_config_path, proxies_config_path, output_path):
     save_yaml(base_config, output_path)
 
 if __name__ == "__main__":
-    base_config_path = 'config.yaml'  # 你提供的基础 Clash 配置文件
-    proxies_config_path = 'merged.yml'  # 之前生成的包含代理列表的文件
-    output_path = 'clash.yaml'  # 最终输出的 Clash 配置文件
+    base_config_path = os.path.join('config', 'config.yaml')  # 你提供的基础 Clash 配置文件
+    proxies_config_path = os.path.join('output', 'merged.yaml')  # 之前生成的包含代理列表的文件
+    output_path = os.path.join('output', 'clash.yaml')  # 最终输出的 Clash 配置文件
     
     merge_clash_config(base_config_path, proxies_config_path, output_path)
     print(f"合并完成，最终配置已保存到 {output_path}")

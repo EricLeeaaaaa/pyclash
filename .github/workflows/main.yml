@@ -4,8 +4,8 @@ on:
   push:
     paths:
       - 'merge.py'
-      - 'source.yaml'
-      - 'config.yaml'
+      - 'config/source.yaml'
+      - 'config/config.yaml'
       - 'config.py'
       - 'speed.sh'
       - '.github/workflows/main.yml'
