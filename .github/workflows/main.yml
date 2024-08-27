@@ -25,7 +25,7 @@ jobs:
         python-version: '3.x'  # 这将使用最新的 Python 3.x 版本
 
     - name: Run merge.py
-      run: python merge.py
+      run: python3 merge.py
 
     - name: Run speed.sh
       run: |
@@ -33,7 +33,7 @@ jobs:
         ./speed.sh
 
     - name: Run config.py
-      run: python config.py
+      run: python3 config.py
 
     - name: Commit and push if changed
       run: |
