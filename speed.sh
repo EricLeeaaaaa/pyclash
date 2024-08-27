@@ -45,15 +45,15 @@ head -n 10 merged.yml
 echo "Running clash-speedtest..."
 ./clash-speedtest -c merged.yml -output csv -timeout 1s
 
-# 检查 results.csv 是否生成
-if [ ! -f results.csv ]; then
-    echo "Error: results.csv not generated"
+# 检查 result.csv 是否生成
+if [ ! -f result.csv ]; then
+    echo "Error: result.csv not generated"
     exit 1
 fi
 
 # 处理 CSV 文件并更新 merged.yml
-echo "Processing results.csv..."
-awk -F',' 'NR>1 && $2!="N/A" && $3!="N/A" {print $1}' results.csv > valid_servers.txt
+echo "Processing result.csv..."
+awk -F',' 'NR>1 && $2!="N/A" && $3!="N/A" {print $1}' result.csv > valid_servers.txt
 
 # 检查 valid_servers.txt 是否生成
 if [ ! -f valid_servers.txt ]; then
@@ -110,6 +110,6 @@ mv merged_updated.yml merged.yml
 
 # 清理临时文件
 echo "Cleaning up temporary files..."
-rm results.csv valid_servers.txt clash-speedtest clash-speedtest_Linux_x86_64.tar.gz
+rm result.csv valid_servers.txt clash-speedtest clash-speedtest_Linux_x86_64.tar.gz
 
 echo "Script completed successfully"
