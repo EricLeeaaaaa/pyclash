@@ -1,11 +1,27 @@
 #!/bin/bash
 
+# 设置错误处理
 set -e  # 遇到错误时立即退出
+set -o pipefail  # 如果任何命令失败，则整个管道失败
 set -x  # 打印执行的每一行命令
 
 # 下载并解压最新的 clash-speedtest
+echo "Downloading the latest release of clash-speedtest..."
 LATEST_RELEASE=$(curl -s https://api.github.com/repos/faceair/clash-speedtest/releases/latest | grep "browser_download_url.*Linux_x86_64.tar.gz" | cut -d '"' -f 4)
-curl -L $LATEST_RELEASE | tar xz
+if [ -z "$LATEST_RELEASE" ]; then
+    echo "Error: Failed to retrieve the latest release URL"
+    exit 1
+fi
+
+echo "Downloading from $LATEST_RELEASE..."
+curl -L "$LATEST_RELEASE" -o clash-speedtest_Linux_x86_64.tar.gz
+if [ ! -f clash-speedtest_Linux_x86_64.tar.gz ]; then
+    echo "Error: Download failed"
+    exit 1
+fi
+
+echo "Extracting clash-speedtest..."
+tar -xzf clash-speedtest_Linux_x86_64.tar.gz
 
 # 检查 clash-speedtest 是否成功解压并给予执行权限
 if [ ! -f ./clash-speedtest ]; then
@@ -25,13 +41,18 @@ fi
 echo "First 10 lines of merged.yml:"
 head -n 10 merged.yml
 
-# 执行 clash-speedtest 并捕获详细输出
-./clash-speedtest -c merged.yml -output csv -timeout 1s > results.csv 2>clash_speedtest_error.log
+# 执行 clash-speedtest 并捕获所有输出
+echo "Running clash-speedtest..."
+clash_output=$(./clash-speedtest -c merged.yml -output csv -timeout 1s 2>&1)
+clash_exit_code=$?
 
-# 如果 clash-speedtest 失败，打印错误日志
-if [ $? -ne 0 ]; then
-    echo "clash-speedtest failed. Error log:"
-    cat clash_speedtest_error.log
+# 打印 clash-speedtest 的输出
+echo "clash-speedtest output:"
+echo "$clash_output"
+
+# 如果 clash-speedtest 失败，退出脚本
+if [ $clash_exit_code -ne 0 ]; then
+    echo "clash-speedtest failed with exit code $clash_exit_code"
     exit 1
 fi
 
@@ -42,6 +63,7 @@ if [ ! -f results.csv ]; then
 fi
 
 # 处理 CSV 文件并更新 merged.yml
+echo "Processing results.csv..."
 awk -F',' 'NR>1 && $2!="N/A" && $3!="N/A" {print $1}' results.csv > valid_servers.txt
 
 # 检查 valid_servers.txt 是否生成
@@ -51,6 +73,7 @@ if [ ! -f valid_servers.txt ]; then
 fi
 
 # 读取 merged.yml 并只保留有效的服务器
+echo "Filtering merged.yml based on valid servers..."
 awk '
 BEGIN {
     in_proxies = 0
@@ -93,9 +116,11 @@ if [ ! -f merged_updated.yml ]; then
 fi
 
 # 替换原文件
+echo "Replacing merged.yml with merged_updated.yml..."
 mv merged_updated.yml merged.yml
 
 # 清理临时文件
-rm results.csv valid_servers.txt clash-speedtest
+echo "Cleaning up temporary files..."
+rm results.csv valid_servers.txt clash-speedtest clash-speedtest_Linux_x86_64.tar.gz
 
 echo "Script completed successfully"
