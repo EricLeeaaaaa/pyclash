@@ -7,11 +7,11 @@ on:
       - 'source.yaml'
       - 'config.yaml'
       - 'config.py'
-      - '.github/workflows/main.yml'
+      - 'speed.sh'
+      - '.github/workflows/update.yml'
   schedule:
     - cron: '0 0 * * *'  # 每天 UTC 时间 00:00 运行
   workflow_dispatch:  # 允许手动触发
-
 
 jobs:
   update:
@@ -27,12 +27,16 @@ jobs:
     - name: Install dependencies
       run: pip install requests pyyaml
 
-    - name: Run scripts
+    - name: Run merge.py
+      run: python merge.py
+
+    - name: Run speed.sh
       run: |
-        python merge.py
         chmod +x speed.sh
         ./speed.sh
-        python config.py
+
+    - name: Run config.py
+      run: python config.py
 
     - name: Commit and push
       run: |
