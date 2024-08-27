@@ -19,6 +19,9 @@ jobs:
     steps:
     - name: Check out repository
       uses: actions/checkout@v3
+      with:
+        persist-credentials: false  # 避免使用 GITHUB_TOKEN
+        fetch-depth: 0  # 获取所有历史记录，以便进行 push
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -43,7 +46,13 @@ jobs:
 
     - name: Commit and push if changed
       run: |
-        git config --global user.email "action@github.com"
-        git config --global user.name "GitHub Action"
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
         git add .
-        git diff --quiet && git diff --staged --quiet || (git commit -m "Auto update on $(date)"; git push)
+        git diff --quiet && git diff --staged --quiet || (git commit -m "Auto update on $(date)")
+
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
