@@ -41,20 +41,9 @@ fi
 echo "First 10 lines of merged.yml:"
 head -n 10 merged.yml
 
-# 执行 clash-speedtest 并捕获所有输出
+# 执行 clash-speedtest
 echo "Running clash-speedtest..."
-clash_output=$(./clash-speedtest -c merged.yml -output csv -timeout 1s 2>&1)
-clash_exit_code=$?
-
-# 打印 clash-speedtest 的输出
-echo "clash-speedtest output:"
-echo "$clash_output"
-
-# 如果 clash-speedtest 失败，退出脚本
-if [ $clash_exit_code -ne 0 ]; then
-    echo "clash-speedtest failed with exit code $clash_exit_code"
-    exit 1
-fi
+./clash-speedtest -c merged.yml -output csv -timeout 1s
 
 # 检查 results.csv 是否生成
 if [ ! -f results.csv ]; then
