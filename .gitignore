@@ -1,1 +1,5 @@
 *.yml
+*.bat
+clash-speedtest*
+*.csv
+*.txt
