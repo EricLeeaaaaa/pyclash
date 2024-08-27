@@ -17,42 +17,26 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-    - name: Check out repository
-      uses: actions/checkout@v3
-      with:
-        persist-credentials: false  # 避免使用 GITHUB_TOKEN
-        fetch-depth: 0  # 获取所有历史记录，以便进行 push
+    - uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.x'  # 这将使用最新的 Python 3.x 版本
+        python-version: '3.x'
 
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install requests pyyaml
+      run: pip install requests pyyaml
 
-    - name: Run merge.py
-      run: python merge.py
-
-    - name: Run speed.sh
+    - name: Run scripts
       run: |
+        python merge.py
         chmod +x speed.sh
         ./speed.sh
+        python config.py
 
-    - name: Run config.py
-      run: python config.py
-
-    - name: Commit and push if changed
+    - name: Commit and push
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
         git add .
-        git diff --quiet && git diff --staged --quiet || (git commit -m "Auto update on $(date)")
-
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: ${{ github.ref }}
+        git diff --quiet && git diff --staged --quiet || (git commit -m "Auto update: $(date +'%Y-%m-%d %H:%M:%S')" && git push)
