@@ -16,17 +16,37 @@ def fetch_yaml(url):
         print(f"获取 {url} 失败: {err}")
         return None
 
-def merge_proxies(urls):
-    """合并来自多个URL的代理配置，并基于代理名称去重。"""
+def merge_proxies(urls, ban_filename):
+    """合并来自多个URL的代理配置，过滤掉包含ban.txt中的词语的代理，并基于代理名称去重。"""
     merged_proxies = {}
+
+    # 加载ban.txt中的禁用词列表
+    with open(ban_filename, 'r', encoding='utf-8') as file:
+        ban_list = [line.strip() for line in file if line.strip()]
+
+    def is_banned(proxy):
+        """检查代理配置是否包含ban_list中的任意一个词。"""
+        proxy_str = yaml.dump(proxy, default_flow_style=False, allow_unicode=True)
+        return any(ban_word in proxy_str for ban_word in ban_list)
+
     for name, url in urls.items():
         config_data = fetch_yaml(url)
-        if config_data and 'proxies' in config_data:
-            for proxy in config_data['proxies']:
-                # 创建新的代理字典，保留所有原始字段
-                new_proxy = {**proxy, 'name': f"{name}-{proxy['name']}"}
-                # 基于代理名称去重
-                merged_proxies[new_proxy['name']] = new_proxy
+        
+        # 如果没有配置数据或没有代理，直接跳过
+        if not config_data or 'proxies' not in config_data:
+            continue
+        
+        for proxy in config_data['proxies']:
+            # 创建新的代理字典，保留所有原始字段
+            proxy_name = f"{name}-{proxy['name']}"
+            
+            # 如果代理名称已经存在，或者包含禁用词，则跳过（去重和过滤）
+            if proxy_name in merged_proxies or is_banned(proxy):
+                continue
+            
+            # 添加到合并后的字典中
+            merged_proxies[proxy_name] = {**proxy, 'name': proxy_name}
+
     # 返回去重后的代理列表
     return list(merged_proxies.values())
 
@@ -40,7 +60,8 @@ if __name__ == "__main__":
     # 从 config/source.yaml 文件加载 URL
     urls = load_urls_from_file('config/source.yaml')
     
-    merged_proxies = merge_proxies(urls)
+    # 合并代理并过滤掉包含ban.txt中词语的代理
+    merged_proxies = merge_proxies(urls, 'ban.txt')
     
     # 将合并后的代理配置保存到 output/merged.yaml
     save_merged_yaml(merged_proxies, 'output/merged.yaml')
