@@ -110,6 +110,6 @@ mv merged_updated.yml merged.yml
 
 # 清理临时文件
 echo "Cleaning up temporary files..."
-rm result.csv valid_servers.txt clash-speedtest clash-speedtest_Linux_x86_64.tar.gz
+rm valid_servers.txt clash-speedtest clash-speedtest_Linux_x86_64.tar.gz
 
 echo "Script completed successfully"
