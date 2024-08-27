@@ -1,6 +1,5 @@
 import requests
 import yaml
-import os
 
 def load_urls_from_file(filename):
     """从文件中加载URL。"""
@@ -18,16 +17,18 @@ def fetch_yaml(url):
         return None
 
 def merge_proxies(urls):
-    """合并来自多个URL的代理配置。"""
-    merged_proxies = []
+    """合并来自多个URL的代理配置，并基于代理名称去重。"""
+    merged_proxies = {}
     for name, url in urls.items():
         config_data = fetch_yaml(url)
         if config_data and 'proxies' in config_data:
             for proxy in config_data['proxies']:
                 # 创建新的代理字典，保留所有原始字段
                 new_proxy = {**proxy, 'name': f"{name}-{proxy['name']}"}
-                merged_proxies.append(new_proxy)
-    return merged_proxies
+                # 基于代理名称去重
+                merged_proxies[new_proxy['name']] = new_proxy
+    # 返回去重后的代理列表
+    return list(merged_proxies.values())
 
 def save_merged_yaml(proxies):
     """将合并的代理配置保存到一个YAML文件中。"""

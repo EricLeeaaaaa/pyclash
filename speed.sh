@@ -21,7 +21,7 @@ if [ ! -f clash-speedtest_Linux_x86_64.tar.gz ]; then
 fi
 
 echo "Extracting clash-speedtest..."
-tar -xzf clash-speedtest_Linux_x86_64.tar.gz
+tar -xzf clash-speedtest_Linux_x86_64.tar.gz clash-speedtest
 
 # 检查 clash-speedtest 是否成功解压并给予执行权限
 if [ ! -f ./clash-speedtest ]; then
