@@ -7,5 +7,5 @@
 > Todo
 >- 优化节点测速
 >- 优化节点去重
->- 添加国内cdn
->- index.html
+>- 添加国内cdn [x]
+>- index.html [x]
