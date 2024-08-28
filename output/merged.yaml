@@ -5474,7 +5474,6 @@ proxies:
   type: vmess
   uuid: 044f0177-0675-4dcf-89d4-804b6788e518
 - alpn:
-  - http%2F1.1
   name: NMW-13|d*********g.com_6
   network: tcp
   port: 443
@@ -5487,7 +5486,6 @@ proxies:
     headers:
       Host: www.zitian.cn
 - alpn:
-  - http%2F1.1
   name: 'NMW-13|d*********g.com_3 #3'
   network: tcp
   password: fuck
@@ -29378,7 +29376,6 @@ proxies:
   type: vmess
   uuid: 044f0177-0675-4dcf-89d4-804b6788e518
 - alpn:
-  - http%2F1.1
   name: chromego-China_None_trojan_1175
   network: tcp
   password: fuck
@@ -29402,7 +29399,6 @@ proxies:
   sni: bing.com
   skip-cert-verify: true
   alpn:
-  - h3
 - name: chromego-United States_None_hy_1
   type: hysteria
   server: 166.1.221.169
@@ -29416,7 +29412,6 @@ proxies:
   sni: bing.com
   skip-cert-verify: true
   alpn:
-  - h3
 - name: chromego-United States_None_hy_2
   type: hysteria
   server: 166.1.221.169
@@ -29430,7 +29425,6 @@ proxies:
   sni: bing.com
   skip-cert-verify: true
   alpn:
-  - h3
 - name: chromego-United States_None_hy_3
   type: hysteria
   server: 166.1.221.169
@@ -29444,7 +29438,6 @@ proxies:
   sni: bing.com
   skip-cert-verify: true
   alpn:
-  - h3
 - name: chromego-United States_None_hy2_0
   type: hysteria2
   server: 207.90.239.157
