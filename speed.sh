@@ -55,6 +55,6 @@ in_proxies && /^  -/ {
 ' merged.yaml > merged.yaml.new && mv merged.yaml.new merged.yaml
 
 # 清理临时文件
-rm top50.csv top50_names.txt clash-speedtest
+rm result.csv top50_names.txt clash-speedtest
 
 echo "处理完成，原 merged.yaml 文件已更新。"
