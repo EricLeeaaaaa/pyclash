@@ -43,7 +43,7 @@ head -n 10 "$MERGED_FILE"
 
 # 执行 clash-speedtest
 echo "Running clash-speedtest..."
-"./$EXECUTABLE_NAME" -c "$MERGED_FILE" -output csv -timeout 1s
+"./$EXECUTABLE_NAME" -c "$MERGED_FILE" -output csv -timeout 1s -size 52428800 -concurrent 32
 
 # 检查 result.csv 是否生成
 if [ ! -f "result.csv" ]; then
