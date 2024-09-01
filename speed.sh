@@ -20,19 +20,19 @@ mkdir -p "${WORK_DIR}/output"
 # 定义测速函数
 run_speedtest() {
     yaml_file="$1"
-    filename=$(basename "$yaml_file" .yaml)
-    mkdir -p "${WORK_DIR}/temp/${filename}"
+    filename=$(basename "$yaml_file")
+    mkdir -p "${WORK_DIR}/temp/${filename%.*}"
     
     echo "开始对 $filename 测速"
     
     # 切换到目标目录
-    cd "${WORK_DIR}/temp/${filename}"
+    cd "${WORK_DIR}/temp/${filename%.*}"
     
     # 执行测速
-    clash-speedtest -c "${WORK_DIR}/temp/${yaml_file}" -output csv -timeout 1s -size 52428800 -concurrent 4
+    clash-speedtest -c "${WORK_DIR}/temp/${filename}" -output csv -timeout 1s -size 52428800 -concurrent 4
     
     # 处理结果
-    awk -v fn="$filename" 'NR>1 {print fn "," $0}' result.csv >> "${WORK_DIR}/temp/results/all_results.csv"
+    awk -v fn="${filename%.*}" 'NR>1 {print fn "," $0}' result.csv >> "${WORK_DIR}/temp/results/all_results.csv"
     
     # 返回原目录
     cd "${WORK_DIR}"
@@ -53,6 +53,6 @@ echo "Filename,节点,带宽 (MB/s),延迟 (ms)" > "${WORK_DIR}/output/top50.csv
 sed -n '2,51p' "${WORK_DIR}/temp/results.csv" >> "${WORK_DIR}/output/top50.csv"
 
 # 删除 temp 文件夹
-rm -rf "${WORK_DIR}/temp"
+rm -r "${WORK_DIR}/temp"
 
 echo "测速完成，前50个结果已保存到 ${WORK_DIR}/output/top50.csv"
