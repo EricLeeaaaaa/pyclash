@@ -1,60 +1,58 @@
 #!/bin/bash
 
-# 设置工作目录
-WORK_DIR="output"
-cd "$WORK_DIR" || exit 1
+# 定义工作目录
+WORK_DIR="$(pwd)"
 
-# 下载并解压 clash-speedtest
-wget -q https://github.com/faceair/clash-speedtest/releases/latest/download/clash-speedtest_Linux_x86_64.tar.gz
-tar -xzvf clash-speedtest_Linux_x86_64.tar.gz clash-speedtest
+# 安装必要的工具
+apt-get update
+apt-get install -y wget parallel
+
+# 下载并安装 clash-speedtest
+wget https://github.com/faceair/clash-speedtest/releases/latest/download/clash-speedtest_Linux_x86_64.tar.gz
+tar -xzf clash-speedtest_Linux_x86_64.tar.gz
+mv clash-speedtest /usr/local/bin/
 rm clash-speedtest_Linux_x86_64.tar.gz
 
-# 执行 clash-speedtest
-./clash-speedtest -c merged.yaml -output csv -timeout 1s -size 52428800 -concurrent 32
+# 创建必要的目录
+mkdir -p "${WORK_DIR}/temp/results"
+mkdir -p "${WORK_DIR}/output"
 
-# 处理 result.csv 文件，限制服务器数量为前50个
-sed '1d' result.csv | sort -t',' -k2 -nr | head -n 50 > top50.csv
-
-# 提取前50个节点的名称
-cut -d',' -f1 top50.csv > top50_names.txt
-
-# 处理 merged.yaml 文件并直接覆盖
-awk '
-BEGIN {
-    in_proxies = 0
-    buffer = ""
+# 定义测速函数
+run_speedtest() {
+    yaml_file="$1"
+    filename=$(basename "$yaml_file")
+    mkdir -p "${WORK_DIR}/temp/${filename%.*}"
+    
+    echo "开始对 $filename 测速"
+    
+    # 切换到目标目录
+    cd "${WORK_DIR}/temp/${filename%.*}"
+    
+    # 执行测速
+    clash-speedtest -c "${WORK_DIR}/temp/${filename}" -output csv -timeout 1s -size 52428800 -concurrent 4
+    
+    # 处理结果
+    awk -v fn="${filename%.*}" 'NR>1 {print fn "," $0}' result.csv >> "${WORK_DIR}/temp/results/all_results.csv"
+    
+    # 返回原目录
+    cd "${WORK_DIR}"
 }
-/^proxies:/ {
-    in_proxies = 1
-    print
-    next
-}
-in_proxies && /^  -/ {
-    buffer = $0 "\n"
-    getline
-    while ($0 ~ /^    /) {
-        buffer = buffer $0 "\n"
-        getline
-    }
-    if (buffer ~ /name: ([^,]+)/) {
-        server_name = gensub(/.*name: ([^,]+).*/, "\\1", "g", buffer)
-        cmd = "grep -q \"^" server_name "$\" top50_names.txt"
-        if (system(cmd) == 0) {
-            printf "%s", buffer
-        }
-    }
-    buffer = ""
-    if ($0 !~ /^  -/) {
-        print
-    }
-    next
-}
-!in_proxies || $0 !~ /^  -/ {
-    print
-}
-' merged.yaml > merged.yaml.new && mv merged.yaml.new merged.yaml
 
-# 清理临时文件
-rm result.csv top50_names.txt clash-speedtest
+export -f run_speedtest
+export WORK_DIR
 
-echo "处理完成，原 merged.yaml 文件已更新。"
+# 并行执行测速
+find "${WORK_DIR}/temp" -maxdepth 1 -name "*.yaml" | parallel run_speedtest
+
+# 对结果进行排序并输出到 temp/results.csv
+echo "Filename,节点,带宽 (MB/s),延迟 (ms)" > "${WORK_DIR}/temp/results.csv"
+sort -t',' -k3 -nr "${WORK_DIR}/temp/results/all_results.csv" >> "${WORK_DIR}/temp/results.csv"
+
+# 提取前50个结果并输出到 output/top50.csv
+echo "Filename,节点,带宽 (MB/s),延迟 (ms)" > "${WORK_DIR}/output/top50.csv"
+sed -n '2,51p' "${WORK_DIR}/temp/results.csv" >> "${WORK_DIR}/output/top50.csv"
+
+# 删除 temp 文件夹
+rm -r "${WORK_DIR}/temp"
+
+echo "测速完成，前50个结果已保存到 ${WORK_DIR}/output/top50.csv"
